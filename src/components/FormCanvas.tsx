@@ -1,6 +1,7 @@
 
 import React from "react";
-import { useDndContext, useSortable } from "@dnd-kit/sortable";
+import { useSortable } from "@dnd-kit/sortable";
+import { useDroppable } from "@dnd-kit/core";
 import { CSS } from "@dnd-kit/utilities";
 import { useFormStore } from "@/hooks/useFormStore";
 import FormElementRenderer from "./FormElementRenderer";
@@ -12,10 +13,14 @@ interface FormCanvasProps {
 
 const FormCanvas = ({ preview = false }: FormCanvasProps) => {
   const { elements, currentId, setCurrentElement } = useFormStore();
+  const { setNodeRef: setDroppableRef } = useDroppable({ id: "form-canvas" });
 
   if (elements.length === 0) {
     return (
-      <div className="h-full flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50">
+      <div 
+        ref={!preview ? setDroppableRef : undefined}
+        className="h-full flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
+      >
         <p className="text-gray-500 text-center">
           Drag and drop form elements here to start building your form
         </p>
@@ -24,7 +29,10 @@ const FormCanvas = ({ preview = false }: FormCanvasProps) => {
   }
 
   return (
-    <div className="space-y-4 p-4 min-h-[300px]">
+    <div 
+      ref={!preview ? setDroppableRef : undefined}
+      className="space-y-4 p-4 min-h-[300px]"
+    >
       {elements.map((element) => (
         <SortableElement
           key={element.id}

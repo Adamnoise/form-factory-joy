@@ -13,7 +13,7 @@ type FadeInProps = {
 const FadeIn = ({
   children,
   className,
-  delay = 0,
+  delay = 100,
   duration = 'normal',
   direction = 'up',
 }: FadeInProps) => {

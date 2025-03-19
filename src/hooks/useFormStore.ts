@@ -12,7 +12,8 @@ export type FormElementType =
   | 'email'
   | 'password'
   | 'heading'
-  | 'paragraph';
+  | 'paragraph'
+  | 'custom';
 
 export interface FormElement {
   id: string;
@@ -29,20 +30,29 @@ export interface FormElement {
     min?: number;
     max?: number;
   };
+  code?: string;
+  isFavorite?: boolean;
 }
 
 interface FormStore {
   elements: FormElement[];
+  customComponents: FormElement[];
+  favoriteComponents: string[]; // Array of component IDs
   currentId: string | null;
   addElement: (element: FormElement) => void;
   updateElement: (id: string, updates: Partial<FormElement>) => void;
   removeElement: (id: string) => void;
   setCurrentElement: (id: string | null) => void;
   reorderElements: (startIndex: number, endIndex: number) => void;
+  addCustomComponent: (component: FormElement) => void;
+  toggleFavorite: (componentId: string) => void;
+  isFavorite: (componentId: string) => boolean;
 }
 
-export const useFormStore = create<FormStore>((set) => ({
+export const useFormStore = create<FormStore>((set, get) => ({
   elements: [],
+  customComponents: [],
+  favoriteComponents: [],
   currentId: null,
   
   addElement: (element) => 
@@ -74,4 +84,26 @@ export const useFormStore = create<FormStore>((set) => ({
       newElements.splice(endIndex, 0, removed);
       return { elements: newElements };
     }),
+
+  addCustomComponent: (component) =>
+    set((state) => ({
+      customComponents: [...state.customComponents, component]
+    })),
+    
+  toggleFavorite: (componentId) =>
+    set((state) => {
+      if (state.favoriteComponents.includes(componentId)) {
+        return { 
+          favoriteComponents: state.favoriteComponents.filter(id => id !== componentId) 
+        };
+      } else {
+        return { 
+          favoriteComponents: [...state.favoriteComponents, componentId] 
+        };
+      }
+    }),
+    
+  isFavorite: (componentId) => {
+    return get().favoriteComponents.includes(componentId);
+  },
 }));

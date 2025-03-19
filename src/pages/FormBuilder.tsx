@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
@@ -19,6 +20,8 @@ import ComponentSidebar from '@/components/ComponentSidebar';
 import PropertiesPanel from '@/components/PropertiesPanel';
 import FormToolbar from '@/components/FormToolbar';
 import { v4 as uuidv4 } from 'uuid';
+import { useToast } from "@/components/ui/use-toast";
+import { toast } from "@/components/ui/sonner";
 
 const FormBuilder = () => {
   const [formTitle, setFormTitle] = useState('Untitled Form');
@@ -42,6 +45,35 @@ const FormBuilder = () => {
       type: type as any,
       label: label
     });
+    
+    toast.success(`Added ${label} to your form`);
+  };
+
+  const handleFormTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormTitle(e.target.value);
+  };
+
+  const handleSaveForm = () => {
+    toast.success("Form saved successfully");
+  };
+
+  const handleExportForm = () => {
+    const formData = {
+      title: formTitle,
+      elements: elements
+    };
+    
+    const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${formTitle.replace(/\s+/g, '-').toLowerCase()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    toast.success("Form exported successfully");
   };
 
   return (
@@ -52,13 +84,17 @@ const FormBuilder = () => {
           <div className="flex items-center gap-3">
             <h1 className="text-xl font-semibold">Form Builder</h1>
             <Separator orientation="vertical" className="h-6" />
-            <span className="text-md">My Form</span>
+            <Input
+              value={formTitle}
+              onChange={handleFormTitleChange}
+              className="w-64 h-8"
+            />
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" title="Copy">
               <Copy className="h-5 w-5" />
             </Button>
-            <Button variant="ghost" size="icon" title="Download">
+            <Button variant="ghost" size="icon" title="Download" onClick={handleExportForm}>
               <FileDown className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" title="Import">
@@ -84,14 +120,14 @@ const FormBuilder = () => {
         </div>
         <div className="flex gap-2">
           <Button variant="outline" className="gap-2">
-            <FileUp className="h-4 w-4" />
-            Import
+            <Eye className="h-4 w-4" />
+            Preview
           </Button>
           <Button variant="outline" className="gap-2">
-            <FileDown className="h-4 w-4" />
-            Export
+            <Code className="h-4 w-4" />
+            Code
           </Button>
-          <Button className="gap-2">
+          <Button className="gap-2" onClick={handleSaveForm}>
             <Save className="h-4 w-4" />
             Save
           </Button>

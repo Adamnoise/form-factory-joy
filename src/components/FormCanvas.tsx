@@ -22,7 +22,7 @@ const FormCanvas = ({ preview = false }: FormCanvasProps) => {
         className="h-full flex items-center justify-center p-4 border-2 border-dashed border-gray-300 rounded-lg bg-gray-50"
       >
         <p className="text-gray-500 text-center">
-          Drag and drop form elements here to start building your form
+          Drag and drop components from the sidebar to start building your form
         </p>
       </div>
     );
@@ -31,7 +31,7 @@ const FormCanvas = ({ preview = false }: FormCanvasProps) => {
   return (
     <div 
       ref={!preview ? setDroppableRef : undefined}
-      className="space-y-4 p-4 min-h-[300px]"
+      className="space-y-4 p-4 min-h-[300px] bg-white rounded-lg shadow-sm"
     >
       {elements.map((element) => (
         <SortableElement

@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
@@ -21,7 +20,7 @@ import PropertiesPanel from '@/components/PropertiesPanel';
 import FormToolbar from '@/components/FormToolbar';
 import { v4 as uuidv4 } from 'uuid';
 import { useToast } from "@/components/ui/use-toast";
-import { toast } from "@/components/ui/sonner";
+import { toast } from "sonner";
 
 const FormBuilder = () => {
   const [formTitle, setFormTitle] = useState('Untitled Form');

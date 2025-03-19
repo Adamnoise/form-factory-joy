@@ -1,10 +1,9 @@
-
 import React, { useState } from 'react';
 import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
 import { SortableContext, arrayMove } from '@dnd-kit/sortable';
 import { useFormStore } from '@/hooks/useFormStore';
 import { 
-  Undo2, Redo2, Eye, Code, Save, FileDown, FileUp, FileCopy, Settings, Sun 
+  Undo2, Redo2, Eye, Code, Save, FileDown, FileUp, Copy, Settings, Sun 
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -57,7 +56,7 @@ const FormBuilder = () => {
           </div>
           <div className="flex items-center gap-2">
             <Button variant="ghost" size="icon" title="Copy">
-              <FileCopy className="h-5 w-5" />
+              <Copy className="h-5 w-5" />
             </Button>
             <Button variant="ghost" size="icon" title="Download">
               <FileDown className="h-5 w-5" />

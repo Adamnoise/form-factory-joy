@@ -75,9 +75,55 @@ export interface FormElement {
     pattern?: string;
     min?: number;
     max?: number;
+    step?: number;
+    customValidation?: string;
+    validateOnBlur?: boolean;
+    validateOnChange?: boolean;
   };
   code?: string;
   isFavorite?: boolean;
+  
+  // New properties
+  width?: string;
+  customWidth?: string;
+  customWidthUnit?: string;
+  size?: string;
+  labelPosition?: string;
+  customClass?: string;
+  hidden?: boolean;
+  textAlign?: 'left' | 'center' | 'right' | 'justify';
+  styles?: {
+    textColor?: string;
+    backgroundColor?: string;
+    borderWidth?: string;
+    borderStyle?: string;
+    borderColor?: string;
+    borderRadius?: string;
+    paddingY?: string;
+    paddingX?: string;
+    marginY?: string;
+    marginX?: string;
+    fontWeight?: string;
+    fontSize?: string;
+    lineHeight?: string;
+    letterSpacing?: string;
+    opacity?: string;
+    shadow?: string;
+  };
+  position?: {
+    type?: string;
+    top?: string;
+    right?: string;
+    bottom?: string;
+    left?: string;
+    zIndex?: string;
+    align?: string;
+    gridColumn?: string;
+    gridRow?: string;
+    hideMobile?: boolean;
+    hideTablet?: boolean;
+    hideDesktop?: boolean;
+  };
 }
 
 interface FormStore {

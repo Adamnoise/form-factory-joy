@@ -1,26 +1,27 @@
+"use client"
 
-import React, { useState } from 'react';
-import { useFormStore, FormElement } from '@/hooks/useFormStore';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
-import { Textarea } from '@/components/ui/textarea';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Checkbox } from '@/components/ui/checkbox';
-import { Button } from '@/components/ui/button';
-import { Separator } from '@/components/ui/separator';
-import { Slider } from '@/components/ui/slider';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { AlignLeft, AlignCenter, AlignRight, AlignJustify, Palette, Layers, Move } from 'lucide-react';
+import { useState } from "react"
+import { useFormStore } from "@/hooks/useFormStore"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Switch } from "@/components/ui/switch"
+import { Textarea } from "@/components/ui/textarea"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Checkbox } from "@/components/ui/checkbox"
+import { Button } from "@/components/ui/button"
+import { Separator } from "@/components/ui/separator"
+import { Slider } from "@/components/ui/slider"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { AlignLeft, AlignCenter, AlignRight, AlignJustify, Palette, Layers, Move } from "lucide-react"
 
 const PropertiesPanel = () => {
-  const { elements, currentId, updateElement } = useFormStore();
-  const [activeTab, setActiveTab] = useState('basic');
-  
-  const currentElement = elements.find(element => element.id === currentId);
-  
+  const { elements, currentId, updateElement } = useFormStore()
+  const [activeTab, setActiveTab] = useState("basic")
+
+  const currentElement = elements.find((element) => element.id === currentId)
+
   if (!currentElement) {
     return (
       <div className="h-full border-l bg-background p-4">
@@ -29,97 +30,107 @@ const PropertiesPanel = () => {
           <p>Select an element to edit its properties</p>
         </div>
       </div>
-    );
+    )
   }
 
   const handleChange = (key: string, value: any) => {
-    updateElement(currentElement.id, { [key]: value });
-  };
+    updateElement(currentElement.id, { [key]: value })
+  }
 
   const handleStyleChange = (key: string, value: any) => {
-    const updatedStyles = { ...(currentElement.styles || {}), [key]: value };
-    updateElement(currentElement.id, { styles: updatedStyles });
-  };
+    const updatedStyles = { ...(currentElement.styles || {}), [key]: value }
+    updateElement(currentElement.id, { styles: updatedStyles })
+  }
 
   const handlePositionChange = (key: string, value: any) => {
-    const updatedPosition = { ...(currentElement.position || {}), [key]: value };
-    updateElement(currentElement.id, { position: updatedPosition });
-  };
+    const updatedPosition = { ...(currentElement.position || {}), [key]: value }
+    updateElement(currentElement.id, { position: updatedPosition })
+  }
 
   const handleValidationChange = (key: string, value: any) => {
-    const updatedValidations = { ...(currentElement.validations || {}), [key]: value };
-    updateElement(currentElement.id, { validations: updatedValidations });
-  };
+    const updatedValidations = { ...(currentElement.validations || {}), [key]: value }
+    updateElement(currentElement.id, { validations: updatedValidations })
+  }
 
   const isFormInput = (type: string): boolean => {
-    return [
-      'text', 'number', 'textarea', 'select', 'checkbox', 'radio', 'date', 'email', 'password'
-    ].includes(type);
-  };
+    return ["text", "number", "textarea", "select", "checkbox", "radio", "date", "email", "password"].includes(type)
+  }
 
   const renderBasicSettings = () => (
     <div className="space-y-4">
       <div className="space-y-2">
         <Label htmlFor="label">Label</Label>
-        <Input
-          id="label"
-          value={currentElement.label}
-          onChange={(e) => handleChange('label', e.target.value)}
-        />
+        <Input id="label" value={currentElement.label} onChange={(e) => handleChange("label", e.target.value)} />
       </div>
-      
+
       {isFormInput(currentElement.type) && (
         <div className="space-y-2">
           <Label htmlFor="placeholder">Placeholder</Label>
           <Input
             id="placeholder"
-            value={currentElement.placeholder || ''}
-            onChange={(e) => handleChange('placeholder', e.target.value)}
+            value={currentElement.placeholder || ""}
+            onChange={(e) => handleChange("placeholder", e.target.value)}
             placeholder="Enter placeholder text"
           />
         </div>
       )}
-      
+
       {isFormInput(currentElement.type) && (
         <div className="flex items-center justify-between">
           <Label htmlFor="required">Required field</Label>
           <Switch
             id="required"
             checked={currentElement.required || false}
-            onCheckedChange={(checked) => handleChange('required', checked)}
+            onCheckedChange={(checked) => handleChange("required", checked)}
           />
         </div>
       )}
-      
-      {(currentElement.type === 'text' || currentElement.type === 'textarea' || currentElement.type === 'email' || currentElement.type === 'password') && (
+
+      {(currentElement.type === "text" ||
+        currentElement.type === "textarea" ||
+        currentElement.type === "email" ||
+        currentElement.type === "password" ||
+        currentElement.type === "number") && (
         <div className="space-y-2">
           <Label htmlFor="defaultValue">Default value</Label>
-          {currentElement.type === 'textarea' ? (
+          {currentElement.type === "textarea" ? (
             <Textarea
               id="defaultValue"
-              value={currentElement.defaultValue as string || ''}
-              onChange={(e) => handleChange('defaultValue', e.target.value)}
+              value={(currentElement.defaultValue as string) || ""}
+              onChange={(e) => handleChange("defaultValue", e.target.value)}
               placeholder="Enter default text"
             />
           ) : (
             <Input
               id="defaultValue"
-              value={currentElement.defaultValue as string || ''}
-              onChange={(e) => handleChange('defaultValue', e.target.value)}
-              type={currentElement.type === 'number' ? 'number' : 'text'}
+              value={(currentElement.defaultValue as string) || ""}
+              onChange={(e) => handleChange("defaultValue", e.target.value)}
+              type={currentElement.type === "number" ? "number" : "text"}
             />
           )}
         </div>
       )}
-      
-      {currentElement.type === 'checkbox' && (
+
+      {currentElement.type === "number" && (
+        <div className="space-y-2">
+          <Label htmlFor="defaultValue">Default value</Label>
+          <Input
+            id="defaultValue"
+            type="number"
+            value={(currentElement.defaultValue as number) || 0}
+            onChange={(e) => handleChange("defaultValue", Number(e.target.value))}
+          />
+        </div>
+      )}
+
+      {currentElement.type === "checkbox" && (
         <div className="space-y-2">
           <Label htmlFor="defaultChecked">Default state</Label>
           <div className="flex items-center space-x-2">
             <Checkbox
               id="defaultChecked"
-              checked={currentElement.defaultValue as boolean || false}
-              onCheckedChange={(checked) => handleChange('defaultValue', checked)}
+              checked={(currentElement.defaultValue as boolean) || false}
+              onCheckedChange={(checked) => handleChange("defaultValue", checked)}
             />
             <Label htmlFor="defaultChecked" className="text-sm">
               Checked by default
@@ -127,8 +138,8 @@ const PropertiesPanel = () => {
           </div>
         </div>
       )}
-      
-      {(currentElement.type === 'select' || currentElement.type === 'radio') && (
+
+      {(currentElement.type === "select" || currentElement.type === "radio") && (
         <div className="space-y-2">
           <Label>Options</Label>
           <div className="space-y-2">
@@ -137,18 +148,18 @@ const PropertiesPanel = () => {
                 <Input
                   value={option.label}
                   onChange={(e) => {
-                    const newOptions = [...(currentElement.options || [])];
-                    newOptions[index] = { ...newOptions[index], label: e.target.value };
-                    handleChange('options', newOptions);
+                    const newOptions = [...(currentElement.options || [])]
+                    newOptions[index] = { ...newOptions[index], label: e.target.value }
+                    handleChange("options", newOptions)
                   }}
                   placeholder="Option label"
                 />
                 <Input
                   value={option.value}
                   onChange={(e) => {
-                    const newOptions = [...(currentElement.options || [])];
-                    newOptions[index] = { ...newOptions[index], value: e.target.value };
-                    handleChange('options', newOptions);
+                    const newOptions = [...(currentElement.options || [])]
+                    newOptions[index] = { ...newOptions[index], value: e.target.value }
+                    handleChange("options", newOptions)
                   }}
                   placeholder="Option value"
                 />
@@ -158,8 +169,8 @@ const PropertiesPanel = () => {
               type="button"
               className="text-sm text-blue-500 hover:text-blue-700"
               onClick={() => {
-                const newOptions = [...(currentElement.options || []), { label: '', value: '' }];
-                handleChange('options', newOptions);
+                const newOptions = [...(currentElement.options || []), { label: "", value: "" }]
+                handleChange("options", newOptions)
               }}
             >
               + Add option
@@ -167,8 +178,8 @@ const PropertiesPanel = () => {
           </div>
         </div>
       )}
-      
-      {(currentElement.type === 'heading' || currentElement.type === 'paragraph') && (
+
+      {(currentElement.type === "heading" || currentElement.type === "paragraph") && (
         <div className="space-y-2">
           <Label htmlFor="textAlign">Text Alignment</Label>
           <div className="flex space-x-2">
@@ -211,27 +222,27 @@ const PropertiesPanel = () => {
           </div>
         </div>
       )}
-      
+
       <div className="space-y-2">
         <Label htmlFor="customClass">Custom CSS Class</Label>
         <Input
           id="customClass"
-          value={currentElement.customClass || ''}
-          onChange={(e) => handleChange('customClass', e.target.value)}
+          value={currentElement.customClass || ""}
+          onChange={(e) => handleChange("customClass", e.target.value)}
           placeholder="E.g. my-custom-class"
         />
       </div>
-      
+
       <div className="flex items-center justify-between">
         <Label htmlFor="hidden">Hidden</Label>
         <Switch
           id="hidden"
           checked={!!currentElement.hidden}
-          onCheckedChange={(checked) => handleChange('hidden', checked)}
+          onCheckedChange={(checked) => handleChange("hidden", checked)}
         />
       </div>
     </div>
-  );
+  )
 
   const renderStyleSettings = () => (
     <div className="space-y-4">
@@ -257,7 +268,7 @@ const PropertiesPanel = () => {
               <Input
                 id="customWidth"
                 type="number"
-                value={currentElement.customWidth || ''}
+                value={currentElement.customWidth || ""}
                 onChange={(e) => handleChange("customWidth", e.target.value)}
                 className="flex-1"
               />
@@ -613,7 +624,7 @@ const PropertiesPanel = () => {
         </div>
       </div>
     </div>
-  );
+  )
 
   const renderPositionSettings = () => (
     <div className="space-y-4">
@@ -819,11 +830,11 @@ const PropertiesPanel = () => {
         </div>
       </div>
     </div>
-  );
+  )
 
   const renderValidationSettings = () => (
     <div className="space-y-4">
-      {(currentElement.type === 'text' || currentElement.type === 'textarea' || currentElement.type === 'email') && (
+      {(currentElement.type === "text" || currentElement.type === "textarea" || currentElement.type === "email") && (
         <>
           <div className="space-y-2">
             <Label htmlFor="minLength">Minimum length</Label>
@@ -860,7 +871,7 @@ const PropertiesPanel = () => {
             <Select
               onValueChange={(value) => {
                 if (value !== "custom") {
-                  handleValidationChange("pattern", value);
+                  handleValidationChange("pattern", value)
                 }
               }}
             >
@@ -881,7 +892,7 @@ const PropertiesPanel = () => {
         </>
       )}
 
-      {currentElement.type === 'number' && (
+      {currentElement.type === "number" && (
         <>
           <div className="space-y-2">
             <Label htmlFor="min">Minimum value</Label>
@@ -951,18 +962,22 @@ const PropertiesPanel = () => {
         <p className="text-xs text-muted-foreground">Validate as user types</p>
       </div>
     </div>
-  );
+  )
 
   return (
     <div className="h-full border-l bg-background flex flex-col">
       <div className="p-4 border-b flex items-center justify-between">
         <h2 className="text-lg font-medium">Properties</h2>
         <div className="flex items-center gap-2">
-          <Button size="sm" variant="ghost" className="text-xs">Preview</Button>
-          <Button size="sm" variant="ghost" className="text-xs">Code</Button>
+          <Button size="sm" variant="ghost" className="text-xs">
+            Preview
+          </Button>
+          <Button size="sm" variant="ghost" className="text-xs">
+            Code
+          </Button>
         </div>
       </div>
-      
+
       <Tabs defaultValue="basic" value={activeTab} onValueChange={setActiveTab} className="flex-1 flex flex-col">
         <TabsList className="px-4 pt-2 justify-start border-b rounded-none gap-2">
           <TabsTrigger value="basic" className="data-[state=active]:bg-muted">
@@ -984,27 +999,28 @@ const PropertiesPanel = () => {
             </TabsTrigger>
           )}
         </TabsList>
-        
+
         <ScrollArea className="flex-1 p-4">
           <TabsContent value="basic" className="mt-0 pb-4">
             {renderBasicSettings()}
           </TabsContent>
-          
+
           <TabsContent value="style" className="mt-0 pb-4">
             {renderStyleSettings()}
           </TabsContent>
-          
+
           <TabsContent value="position" className="mt-0 pb-4">
             {renderPositionSettings()}
           </TabsContent>
-          
+
           <TabsContent value="validation" className="mt-0 pb-4">
             {renderValidationSettings()}
           </TabsContent>
         </ScrollArea>
       </Tabs>
     </div>
-  );
-};
+  )
+}
 
-export default PropertiesPanel;
+export default PropertiesPanel
+

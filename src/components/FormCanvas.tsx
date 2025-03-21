@@ -40,7 +40,7 @@ const FormCanvas = ({
     if (!gridEnabled) return {};
     
     const position = element.position || {};
-    const style: any = {};
+    const style: React.CSSProperties = {};
     
     if (position.gridColumn) {
       style.gridColumn = position.gridColumn;

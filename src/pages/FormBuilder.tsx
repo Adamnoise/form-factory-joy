@@ -1,289 +1,176 @@
-
-import React, { useState } from 'react';
-import { DndContext, DragEndEvent, closestCenter } from '@dnd-kit/core';
-import { SortableContext, arrayMove } from '@dnd-kit/sortable';
-import { useFormStore } from '@/hooks/useFormStore';
-import { 
-  Undo2, Redo2, Eye, Code, Save, FileDown, FileUp, Copy, Settings, Sun 
-} from 'lucide-react';
+import React, { useState, useCallback } from 'react';
+import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Input } from '@/components/ui/input';
-import { 
-  ResizablePanelGroup, 
-  ResizablePanel, 
-  ResizableHandle 
-} from '@/components/ui/resizable';
-import { Separator } from '@/components/ui/separator';
+import { Plus, Save, Download, Upload } from 'lucide-react';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { useFormStore } from '@/hooks/useFormStore';
 import FormCanvas from '@/components/FormCanvas';
-import ComponentSidebar from '@/components/ComponentSidebar';
+import ElementSidebar from '@/components/ElementSidebar';
 import PropertiesPanel from '@/components/PropertiesPanel';
+import AddComponentDialog from '@/components/AddComponentDialog';
 import FormToolbar from '@/components/FormToolbar';
-import { v4 as uuidv4 } from 'uuid';
-import { useToast } from "@/components/ui/use-toast";
+import { useIsMobile } from '@/hooks/use-mobile';
+// Change this import:
+// import { toast } from "@/components/ui/sonner";
+// To:
 import { toast } from "sonner";
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { Label } from '@/components/ui/label';
 
 const FormBuilder = () => {
-  const [formTitle, setFormTitle] = useState('Untitled Form');
-  const [activeTab, setActiveTab] = useState('all');
-  const [viewMode, setViewMode] = useState('edit'); // edit, preview, code
-  const [gridSettings, setGridSettings] = useState({
-    enabled: false,
-    columns: 2,
-    rows: 2
+  const [open, setOpen] = useState(false);
+  const [previewMode, setPreviewMode] = useState(false);
+  const [gridEnabled, setGridEnabled] = useState(false);
+  const isMobile = useIsMobile();
+  const { elements, addElement, updateElement, setElements } = useFormStore();
+
+  const handleDragEnd = useCallback(
+    (event: DragEndEvent) => {
+      const { active, over } = event;
+
+      if (!over) return;
+
+      if (active.id === "form-element" && over.id === "form-canvas") {
+        setOpen(true);
+        return;
+      }
+
+      if (active.id !== over.id) {
+        setElements((prev) => {
+          const activeIndex = prev.findIndex((item) => item.id === active.id);
+          const overIndex = prev.findIndex((item) => item.id === over.id);
+          return arrayMove(prev, activeIndex, overIndex);
+        });
+      }
+    },
+    [setElements, setOpen]
+  );
+
+  const sensor = useSensor(PointerSensor, {
+    activationConstraint: {
+      distance: 10,
+    },
   });
-  const { elements, addElement, reorderElements } = useFormStore();
+  const sensors = useSensors(sensor);
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    
-    if (over && active.id !== over.id) {
-      const oldIndex = elements.findIndex((element) => element.id === active.id);
-      const newIndex = elements.findIndex((element) => element.id === over.id);
-      
-      reorderElements(oldIndex, newIndex);
-    }
+  const togglePreviewMode = () => {
+    setPreviewMode((prev) => !prev);
   };
 
-  const handleElementDrop = (type: string, label: string) => {
-    addElement({
-      id: uuidv4(),
-      type: type as any,
-      label: label
-    });
-    
-    toast.success(`Added ${label} to your form`);
+  const handleAddElement = (element: any) => {
+    addElement(element);
+    setOpen(false);
   };
 
-  const handleFormTitleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormTitle(e.target.value);
+  const handleUpdateElement = (id: string, data: any) => {
+    updateElement(id, data);
   };
 
-  const handleSaveForm = () => {
-    toast.success("Form saved successfully");
-  };
-
-  const handleExportForm = () => {
-    const formData = {
-      title: formTitle,
-      elements: elements
-    };
-    
-    const blob = new Blob([JSON.stringify(formData, null, 2)], { type: 'application/json' });
+  const handleExportCode = () => {
+    const jsonCode = JSON.stringify(elements, null, 2);
+    const blob = new Blob([jsonCode], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${formTitle.replace(/\s+/g, '-').toLowerCase()}.json`;
+    a.download = 'form_data.json';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    
-    toast.success("Form exported successfully");
   };
 
-  const toggleGridSettings = () => {
-    setGridSettings(prev => ({
-      ...prev, 
-      enabled: !prev.enabled
-    }));
+  const handleSave = () => {
+    toast({
+      title: "Form saved!",
+      description: "Your form has been saved successfully.",
+    })
   };
 
-  const updateGridColumns = (value: number) => {
-    setGridSettings(prev => ({
-      ...prev,
-      columns: value
-    }));
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const jsonData = JSON.parse(e.target?.result as string);
+          setElements(jsonData);
+          toast({
+            title: "Form loaded!",
+            description: "Your form has been loaded successfully.",
+          })
+        } catch (error) {
+          toast({
+            title: "Error",
+            description: "Failed to load form data.",
+          })
+        }
+      };
+      reader.readAsText(file);
+    }
   };
-
-  const updateGridRows = (value: number) => {
-    setGridSettings(prev => ({
-      ...prev,
-      rows: value
-    }));
-  };
-
-  const renderLayoutSettings = () => (
-    <div className="border-b bg-background p-2 flex items-center space-x-4">
-      <Label className="font-medium text-sm">Layout:</Label>
-      <div className="grid grid-cols-3 gap-2">
-        <Button 
-          variant={!gridSettings.enabled ? 'default' : 'outline'} 
-          size="sm" 
-          onClick={() => setGridSettings({...gridSettings, enabled: false})}
-        >
-          Free
-        </Button>
-        <Button 
-          variant={gridSettings.enabled ? 'default' : 'outline'} 
-          size="sm"
-          onClick={() => setGridSettings({...gridSettings, enabled: true})}
-        >
-          Grid
-        </Button>
-      </div>
-
-      {gridSettings.enabled && (
-        <>
-          <div className="flex items-center space-x-2">
-            <Label className="text-sm">Columns:</Label>
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4].map(num => (
-                <Button 
-                  key={num}
-                  size="sm"
-                  variant={gridSettings.columns === num ? 'default' : 'outline'}
-                  className="h-7 w-7 p-0"
-                  onClick={() => updateGridColumns(num)}
-                >
-                  {num}
-                </Button>
-              ))}
-            </div>
-          </div>
-          
-          <div className="flex items-center space-x-2">
-            <Label className="text-sm">Rows:</Label>
-            <div className="flex space-x-1">
-              {[1, 2, 3, 4].map(num => (
-                <Button 
-                  key={num}
-                  size="sm"
-                  variant={gridSettings.rows === num ? 'default' : 'outline'}
-                  className="h-7 w-7 p-0"
-                  onClick={() => updateGridRows(num)}
-                >
-                  {num}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </>
-      )}
-
-      <div className="ml-auto flex space-x-2">
-        <Button 
-          variant={viewMode === 'preview' ? 'default' : 'outline'} 
-          size="sm"
-          onClick={() => setViewMode('preview')}
-        >
-          <Eye className="h-4 w-4 mr-2" />
-          Preview
-        </Button>
-        <Button 
-          variant={viewMode === 'code' ? 'default' : 'outline'} 
-          size="sm"
-          onClick={() => setViewMode('code')}
-        >
-          <Code className="h-4 w-4 mr-2" />
-          Code
-        </Button>
-      </div>
-    </div>
-  );
 
   return (
-    <div className="flex flex-col h-screen bg-background">
-      {/* App Header */}
-      <header className="border-b bg-background z-10">
-        <div className="flex items-center justify-between px-4 h-14">
-          <div className="flex items-center gap-3">
-            <h1 className="text-xl font-semibold">Form Builder</h1>
-            <Separator orientation="vertical" className="h-6" />
-            <Input
-              value={formTitle}
-              onChange={handleFormTitleChange}
-              className="w-64 h-8"
+    <div className="flex flex-col h-screen">
+      <FormToolbar 
+        onPreviewToggle={togglePreviewMode}
+        isPreviewMode={previewMode}
+        gridEnabled={gridEnabled}
+        setGridEnabled={setGridEnabled}
+        onExportCode={handleExportCode}
+        onSave={handleSave}
+      />
+
+      <div className="flex flex-grow">
+        <DndContext
+          sensors={sensors}
+          onDragEnd={handleDragEnd}
+        >
+          <ElementSidebar />
+
+          <div className="flex-1 p-4">
+            <FormCanvas 
+              preview={previewMode} 
+              gridEnabled={gridEnabled}
+              gridColumns={3}
+              gridRows={3}
             />
           </div>
-          <div className="flex items-center gap-2">
-            <Button variant="ghost" size="icon" title="Copy">
-              <Copy className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" title="Download" onClick={handleExportForm}>
-              <FileDown className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" title="Import">
-              <FileUp className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" title="Settings">
-              <Settings className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" title="Toggle Theme">
-              <Sun className="h-5 w-5" />
-            </Button>
-          </div>
-        </div>
-      </header>
+        </DndContext>
 
-      {/* Form Title Area */}
-      <div className="border-b bg-background p-4 flex justify-between items-center">
-        <div className="flex items-center gap-2">
-          <h2 className="text-xl font-semibold">{formTitle}</h2>
-          <Button variant="ghost" size="icon" className="h-8 w-8">
-            <Settings className="h-4 w-4" />
+        {!isMobile && (
+          <PropertiesPanel onElementUpdate={handleUpdateElement} />
+        )}
+      </div>
+
+      <div className="flex justify-between items-center px-4 py-3 border-t bg-background/80 backdrop-blur-sm">
+        <Accordion type="single" collapsible>
+          <AccordionItem value="help">
+            <AccordionTrigger>Need Help?</AccordionTrigger>
+            <AccordionContent>
+              This is a basic form builder. Drag elements from the sidebar to the canvas.
+              Use the properties panel to adjust element settings.
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
+
+        <div className="flex items-center space-x-2">
+          <label htmlFor="upload-form" className="cursor-pointer">
+            <Button variant="outline" size="sm" asChild>
+              <><Upload className="h-4 w-4 mr-2" /> Upload Form</>
+            </Button>
+            <input type="file" id="upload-form" accept=".json" onChange={handleFileChange} className="hidden" />
+          </label>
+          <Button variant="outline" size="sm" onClick={handleExportCode} className="gap-1">
+            <Download className="h-4 w-4" />
+            Export Form
           </Button>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" className="gap-2">
-            <Eye className="h-4 w-4" />
-            Preview
-          </Button>
-          <Button variant="outline" className="gap-2">
-            <Code className="h-4 w-4" />
-            Code
-          </Button>
-          <Button className="gap-2" onClick={handleSaveForm}>
-            <Save className="h-4 w-4" />
-            Save
+          <Button size="sm" onClick={() => setOpen(true)} className="gap-1">
+            <Plus className="h-4 w-4" />
+            Add Component
           </Button>
         </div>
       </div>
 
-      {/* Layout Settings */}
-      {renderLayoutSettings()}
-
-      <div className="flex-1 overflow-hidden">
-        <ResizablePanelGroup direction="horizontal">
-          {/* Left Sidebar - Component Library */}
-          <ResizablePanel defaultSize={20} minSize={15}>
-            <ComponentSidebar onElementDrop={handleElementDrop} activeTab={activeTab} setActiveTab={setActiveTab} />
-          </ResizablePanel>
-          
-          <ResizableHandle withHandle />
-          
-          {/* Main Form Canvas */}
-          <ResizablePanel defaultSize={60} minSize={30}>
-            <div className="flex flex-col h-full">
-              <FormToolbar />
-              <div className="flex-1 overflow-auto p-4">
-                <DndContext 
-                  collisionDetection={closestCenter}
-                  onDragEnd={handleDragEnd}
-                >
-                  <SortableContext items={elements.map(e => e.id)}>
-                    <FormCanvas 
-                      preview={viewMode === 'preview'} 
-                      gridEnabled={gridSettings.enabled}
-                      gridColumns={gridSettings.columns}
-                      gridRows={gridSettings.rows}
-                    />
-                  </SortableContext>
-                </DndContext>
-              </div>
-            </div>
-          </ResizablePanel>
-          
-          <ResizableHandle withHandle />
-          
-          {/* Right Sidebar - Properties */}
-          <ResizablePanel defaultSize={20} minSize={15}>
-            <PropertiesPanel />
-          </ResizablePanel>
-        </ResizablePanelGroup>
-      </div>
+      <AddComponentDialog open={open} onOpenChange={setOpen} onAddElement={handleAddElement} />
     </div>
   );
 };

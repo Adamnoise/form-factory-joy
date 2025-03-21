@@ -126,7 +126,7 @@ const FormElementRenderer = ({ element }: FormElementRendererProps) => {
       // Simple protection for code evaluation
       const safeCode = code.replace(/document|window|location|localStorage|sessionStorage|navigator/g, "");
       
-      // This is a very simple implementation - in a real app you would need more safety measures
+      // This is a simple implementation - in a real app you would need more safety measures
       // Use a sandbox or iframe for proper security
       return (
         <div 
@@ -237,66 +237,19 @@ const FormElementRenderer = ({ element }: FormElementRendererProps) => {
         </p>
       );
       
-    // Handle all shadcn/ui components
-    case 'accordion':
-    case 'alert':
-    case 'alert-dialog':
-    case 'aspect-ratio':
-    case 'avatar':
-    case 'badge':
-    case 'breadcrumb':
-    case 'button':
-    case 'calendar':
-    case 'card':
-    case 'carousel':
-    case 'chart':
-    case 'collapsible':
-    case 'combobox':
-    case 'command':
-    case 'context-menu':
-    case 'data-table':
-    case 'date-picker':
-    case 'dialog':
-    case 'drawer':
-    case 'dropdown-menu':
-    case 'form':
-    case 'hover-card':
-    case 'input-otp':
-    case 'menubar':
-    case 'navigation-menu':
-    case 'pagination':
-    case 'popover':
-    case 'progress':
-    case 'radio-group':
-    case 'resizable':
-    case 'scroll-area':
-    case 'separator':
-    case 'sheet':
-    case 'sidebar':
-    case 'skeleton':
-    case 'slider':
-    case 'sonner':
-    case 'switch':
-    case 'table':
-    case 'tabs':
-    case 'toast':
-    case 'toggle':
-    case 'toggle-group':
-    case 'tooltip':
+    // Handle all UI components as a generic component placeholder
+    default:
       return (
         <div 
           className={cn("mb-4 p-3 border rounded-md bg-gray-50", element.customClass)} 
           style={getElementStyles()}
         >
-          <div className="text-xs text-muted-foreground mb-2">shadcn/ui component: {label}</div>
+          <div className="text-xs text-muted-foreground mb-2">Component: {label || type}</div>
           <div className="flex items-center justify-center p-6 border border-dashed rounded-md bg-white">
-            {label} component placeholder
+            {label || type} component placeholder
           </div>
         </div>
       );
-      
-    default:
-      return null;
   }
 };
 

@@ -5,7 +5,7 @@ import { arrayMove } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { Plus, Save, Download, Upload } from 'lucide-react';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { useFormStore } from '@/hooks/useFormStore';
+import { useFormStore, FormElement } from '@/hooks/useFormStore';
 import FormCanvas from '@/components/FormCanvas';
 import ElementSidebar from '@/components/ElementSidebar';
 import PropertiesPanel from '@/components/PropertiesPanel';
@@ -33,7 +33,7 @@ const FormBuilder = () => {
       }
 
       if (active.id !== over.id) {
-        setElements((prev) => {
+        setElements((prev: FormElement[]) => {
           const activeIndex = prev.findIndex((item) => item.id === active.id);
           const overIndex = prev.findIndex((item) => item.id === over.id);
           return arrayMove(prev, activeIndex, overIndex);
@@ -77,8 +77,7 @@ const FormBuilder = () => {
   };
 
   const handleSave = () => {
-    toast({
-      title: "Form saved",
+    toast("Form saved", {
       description: "Your form has been saved successfully."
     });
   };
@@ -91,13 +90,11 @@ const FormBuilder = () => {
         try {
           const jsonData = JSON.parse(e.target?.result as string);
           setElements(jsonData);
-          toast({
-            title: "Form loaded",
+          toast("Form loaded", {
             description: "Your form has been loaded successfully."
           });
         } catch (error) {
-          toast({
-            title: "Error",
+          toast("Error", {
             description: "Failed to load form data."
           });
         }

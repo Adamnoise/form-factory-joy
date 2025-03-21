@@ -13,7 +13,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { useFormStore } from "@/hooks/useFormStore";
 import { PlusCircle } from "lucide-react";
-import { FormElement } from '@/hooks/useFormStore';
+import { FormElement } from '@/types/formTypes';
 import { v4 as uuidv4 } from 'uuid';
 import { toast } from "sonner";
 

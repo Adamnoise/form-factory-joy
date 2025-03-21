@@ -1,5 +1,7 @@
+
 import React from 'react';
 import { useFormStore } from '@/hooks/useFormStore';
+import { FormElement } from '@/types/formTypes';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';

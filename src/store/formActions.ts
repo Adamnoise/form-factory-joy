@@ -18,7 +18,7 @@ export interface FormActions {
 
 export type FormStore = FormStoreState & FormActions;
 
-export const createFormActions: StateCreator<FormStore, [], [], FormActions> = (set, get) => ({
+export const createFormActions: StateCreator<FormStore, [], [], FormActions> = (set, get, store) => ({
   addElement: (element) => 
     set((state) => {
       const newElements = [...state.elements, element];

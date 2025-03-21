@@ -1,6 +1,6 @@
 
 import React, { useState, useCallback } from 'react';
-import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { DndContext, DragEndEvent, DragStartEvent, DragOverEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { Plus, Save, Download, Upload } from 'lucide-react';
@@ -14,36 +14,87 @@ import AddComponentDialog from '@/components/AddComponentDialog';
 import FormToolbar from '@/components/FormToolbar';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { toast } from "sonner";
+import { v4 as uuidv4 } from 'uuid';
 
 const FormBuilder = () => {
   const [open, setOpen] = useState(false);
   const [previewMode, setPreviewMode] = useState(false);
   const [gridEnabled, setGridEnabled] = useState(false);
+  const [activeId, setActiveId] = useState<string | null>(null);
   const isMobile = useIsMobile();
-  const { elements, addElement, updateElement, setElements } = useFormStore();
+  const { elements, addElement, updateElement, setElements, reorderElements } = useFormStore();
+
+  const handleDragStart = (event: DragStartEvent) => {
+    const { active } = event;
+    setActiveId(active.id as string);
+  };
+
+  const handleDragOver = (event: DragOverEvent) => {
+    const { active, over } = event;
+    
+    if (!over) return;
+    
+    // Handle dropping an element from the sidebar onto the canvas
+    if (active.id === 'form-element' && over.id === 'form-canvas') {
+      // We'll handle this in dragEnd
+      return;
+    }
+  };
 
   const handleDragEnd = useCallback(
     (event: DragEndEvent) => {
       const { active, over } = event;
+      setActiveId(null);
 
       if (!over) return;
-
-      if (active.id === "form-element" && over.id === "form-canvas") {
-        setOpen(true);
+      
+      if (active.id === 'form-element' && over.id === 'form-canvas') {
+        // Handle dropping an element from the sidebar onto the canvas
+        const elementType = active.data?.current?.type || 'element';
+        const element = document.querySelector(`[data-element-type]`) as HTMLElement;
+        
+        if (element) {
+          const elementType = element.dataset.elementType || 'unknown';
+          
+          const newElement: FormElement = {
+            id: uuidv4(),
+            type: elementType,
+            label: elementType.charAt(0).toUpperCase() + elementType.slice(1),
+            properties: {},
+            style: {
+              width: '100%',
+              padding: '8px',
+              margin: '0',
+              border: '1px solid #e2e8f0',
+              borderRadius: '4px',
+              backgroundColor: '#ffffff'
+            },
+            position: gridEnabled ? {
+              gridColumn: '1',
+              gridRow: '1'
+            } : undefined
+          };
+          
+          addElement(newElement);
+        } else {
+          setOpen(true);
+        }
+        
         return;
       }
 
       if (active.id !== over.id) {
-        // Find the indexes in the current elements array and create a new array with the items reordered
+        // Find the indexes in the current elements array
         const activeIndex = elements.findIndex((item) => item.id === active.id);
         const overIndex = elements.findIndex((item) => item.id === over.id);
-        const newElements = arrayMove(elements, activeIndex, overIndex);
         
-        // Now pass the complete new array to setElements instead of a callback function
-        setElements(newElements);
+        if (activeIndex !== -1 && overIndex !== -1) {
+          // Use the reorderElements action to update the order
+          reorderElements(activeIndex, overIndex);
+        }
       }
     },
-    [elements, setElements, setOpen]
+    [elements, addElement, reorderElements, gridEnabled, setOpen]
   );
 
   const sensor = useSensor(PointerSensor, {
@@ -120,6 +171,8 @@ const FormBuilder = () => {
       <div className="flex flex-grow">
         <DndContext
           sensors={sensors}
+          onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
         >
           <ElementSidebar />

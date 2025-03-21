@@ -7,6 +7,8 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useDraggable } from '@dnd-kit/core';
+import { CSS } from '@dnd-kit/utilities';
 
 const ElementSidebar = () => {
   const elements = [
@@ -23,6 +25,18 @@ const ElementSidebar = () => {
     { id: 'blog-news', name: 'Blog News', icon: '⛾' },
     { id: 'blog-slider', name: 'Blog Slider', icon: '⧠⧠' },
   ];
+
+  // Create a draggable element for the form-element
+  const { attributes, listeners, setNodeRef, transform } = useDraggable({
+    id: 'form-element',
+    data: {
+      type: 'element',
+    },
+  });
+
+  const style = transform ? {
+    transform: CSS.Transform.toString(transform),
+  } : undefined;
 
   return (
     <div className="w-[280px] bg-[#F5F5F5] h-full flex flex-col">
@@ -93,7 +107,12 @@ const ElementSidebar = () => {
           {elements.map((element) => (
             <Card 
               key={element.id}
-              className="p-3 flex flex-col items-center justify-center h-[100px] hover:bg-[#E0F7FA] transition-colors cursor-pointer border-dashed border-gray-300 relative"
+              ref={setNodeRef}
+              {...attributes}
+              {...listeners}
+              style={style}
+              className="p-3 flex flex-col items-center justify-center h-[100px] hover:bg-[#E0F7FA] transition-colors cursor-grab border-dashed border-gray-300 relative"
+              data-element-type={element.id}
             >
               <div className="text-2xl text-gray-400 mb-2">{element.icon}</div>
               <div className="text-xs text-center flex items-center">

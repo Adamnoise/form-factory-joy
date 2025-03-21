@@ -89,8 +89,7 @@ const PropertiesPanel = () => {
       {(currentElement.type === "text" ||
         currentElement.type === "textarea" ||
         currentElement.type === "email" ||
-        currentElement.type === "password" ||
-        currentElement.type === "number") && (
+        currentElement.type === "password") && (
         <div className="space-y-2">
           <Label htmlFor="defaultValue">Default value</Label>
           {currentElement.type === "textarea" ? (
@@ -105,7 +104,7 @@ const PropertiesPanel = () => {
               id="defaultValue"
               value={(currentElement.defaultValue as string) || ""}
               onChange={(e) => handleChange("defaultValue", e.target.value)}
-              type={currentElement.type === "number" ? "number" : "text"}
+              type={currentElement.type === "email" ? "email" : currentElement.type === "password" ? "password" : "text"}
             />
           )}
         </div>
@@ -1023,4 +1022,3 @@ const PropertiesPanel = () => {
 }
 
 export default PropertiesPanel
-

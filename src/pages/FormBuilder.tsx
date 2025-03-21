@@ -33,14 +33,16 @@ const FormBuilder = () => {
       }
 
       if (active.id !== over.id) {
-        setElements((prev: FormElement[]) => {
-          const activeIndex = prev.findIndex((item) => item.id === active.id);
-          const overIndex = prev.findIndex((item) => item.id === over.id);
-          return arrayMove(prev, activeIndex, overIndex);
-        });
+        // Find the indexes in the current elements array and create a new array with the items reordered
+        const activeIndex = elements.findIndex((item) => item.id === active.id);
+        const overIndex = elements.findIndex((item) => item.id === over.id);
+        const newElements = arrayMove(elements, activeIndex, overIndex);
+        
+        // Now pass the complete new array to setElements instead of a callback function
+        setElements(newElements);
       }
     },
-    [setElements, setOpen]
+    [elements, setElements, setOpen]
   );
 
   const sensor = useSensor(PointerSensor, {

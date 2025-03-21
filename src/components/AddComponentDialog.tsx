@@ -1,3 +1,4 @@
+
 import React from 'react';
 import {
   Dialog,
@@ -18,13 +19,27 @@ import { toast } from "sonner";
 
 interface AddComponentDialogProps {
   children?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+  onAddElement?: (element: FormElement) => void;
+  onAddComponent?: (component: FormElement) => void;
 }
 
-const AddComponentDialog: React.FC<AddComponentDialogProps> = ({ children }) => {
-  const [open, setOpen] = React.useState(false);
+const AddComponentDialog: React.FC<AddComponentDialogProps> = ({ 
+  children, 
+  open: propOpen, 
+  onOpenChange: propOnOpenChange,
+  onAddElement,
+  onAddComponent 
+}) => {
+  const [internalOpen, setInternalOpen] = React.useState(false);
   const [label, setLabel] = React.useState('');
   const [type, setType] = React.useState<FormElement['type']>('text');
   const { addElement } = useFormStore();
+
+  // Use props or internal state
+  const open = propOpen !== undefined ? propOpen : internalOpen;
+  const setOpen = propOnOpenChange || setInternalOpen;
 
   const handleAddComponent = () => {
     if (!label) {
@@ -39,7 +54,14 @@ const AddComponentDialog: React.FC<AddComponentDialogProps> = ({ children }) => 
       required: false,
     };
 
-    addElement(newElement);
+    if (onAddElement) {
+      onAddElement(newElement);
+    } else if (onAddComponent) {
+      onAddComponent(newElement);
+    } else {
+      addElement(newElement);
+    }
+    
     setOpen(false);
     setLabel('');
     toast.success(`${label} component added successfully!`);

@@ -1,9 +1,10 @@
+
 import React, { useState, useCallback } from 'react';
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
 import { arrayMove } from '@dnd-kit/sortable';
 import { Button } from '@/components/ui/button';
 import { Plus, Save, Download, Upload } from 'lucide-react';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useFormStore } from '@/hooks/useFormStore';
 import FormCanvas from '@/components/FormCanvas';
 import ElementSidebar from '@/components/ElementSidebar';
@@ -11,9 +12,6 @@ import PropertiesPanel from '@/components/PropertiesPanel';
 import AddComponentDialog from '@/components/AddComponentDialog';
 import FormToolbar from '@/components/FormToolbar';
 import { useIsMobile } from '@/hooks/use-mobile';
-// Change this import:
-// import { toast } from "@/components/ui/sonner";
-// To:
 import { toast } from "sonner";
 
 const FormBuilder = () => {
@@ -80,9 +78,9 @@ const FormBuilder = () => {
 
   const handleSave = () => {
     toast({
-      title: "Form saved!",
-      description: "Your form has been saved successfully.",
-    })
+      title: "Form saved",
+      description: "Your form has been saved successfully."
+    });
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -94,14 +92,14 @@ const FormBuilder = () => {
           const jsonData = JSON.parse(e.target?.result as string);
           setElements(jsonData);
           toast({
-            title: "Form loaded!",
-            description: "Your form has been loaded successfully.",
-          })
+            title: "Form loaded",
+            description: "Your form has been loaded successfully."
+          });
         } catch (error) {
           toast({
             title: "Error",
-            description: "Failed to load form data.",
-          })
+            description: "Failed to load form data."
+          });
         }
       };
       reader.readAsText(file);
@@ -170,7 +168,11 @@ const FormBuilder = () => {
         </div>
       </div>
 
-      <AddComponentDialog open={open} onOpenChange={setOpen} onAddElement={handleAddElement} />
+      <AddComponentDialog 
+        open={open} 
+        onOpenChange={setOpen} 
+        onAddElement={handleAddElement} 
+      />
     </div>
   );
 };

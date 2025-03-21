@@ -14,7 +14,11 @@ import {
 } from "@/components/ui/accordion"
 import { cn } from '@/lib/utils';
 
-const PropertiesPanel = () => {
+interface PropertiesPanelProps {
+  onElementUpdate?: (id: string, updates: Partial<any>) => void;
+}
+
+const PropertiesPanel: React.FC<PropertiesPanelProps> = ({ onElementUpdate }) => {
   const { currentId, elements, updateElement } = useFormStore();
 
   const currentElement = elements.find((element) => element.id === currentId);
@@ -24,25 +28,41 @@ const PropertiesPanel = () => {
   }
 
   const handleChange = (prop: string, value: any) => {
-    updateElement(currentId, { [prop]: value });
+    if (onElementUpdate) {
+      onElementUpdate(currentId, { [prop]: value });
+    } else {
+      updateElement(currentId, { [prop]: value });
+    }
   };
   
   const handleStyleChange = (styleProp: string, value: string) => {
-    updateElement(currentId, {
+    const updates = {
       styles: {
         ...currentElement.styles,
         [styleProp]: value,
       },
-    });
+    };
+    
+    if (onElementUpdate) {
+      onElementUpdate(currentId, updates);
+    } else {
+      updateElement(currentId, updates);
+    }
   };
   
-  const handlePositionChange = (positionProp: string, value: string) => {
-    updateElement(currentId, {
+  const handlePositionChange = (positionProp: string, value: any) => {
+    const updates = {
       position: {
         ...currentElement.position,
         [positionProp]: value,
       },
-    });
+    };
+    
+    if (onElementUpdate) {
+      onElementUpdate(currentId, updates);
+    } else {
+      updateElement(currentId, updates);
+    }
   };
 
   return (
@@ -490,29 +510,40 @@ const PropertiesPanel = () => {
                 onChange={(e) => handlePositionChange("gridRow", e.target.value)}
               />
             </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hideMobile"
-                checked={currentElement.position?.hideMobile || false}
-                onCheckedChange={(checked) => handlePositionChange("hideMobile", checked)}
-              />
-              <Label htmlFor="hideMobile">Hide on Mobile</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hideTablet"
-                checked={currentElement.position?.hideTablet || false}
-                onCheckedChange={(checked) => handlePositionChange("hideTablet", checked)}
-              />
-              <Label htmlFor="hideTablet">Hide on Tablet</Label>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Checkbox
-                id="hideDesktop"
-                checked={currentElement.position?.hideDesktop || false}
-                onCheckedChange={(checked) => handlePositionChange("hideDesktop", checked)}
-              />
-              <Label htmlFor="hideDesktop">Hide on Desktop</Label>
+            <div className="space-y-2">
+              <Label>Responsive Visibility</Label>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="hideMobile" className="text-sm">
+                    Hide on Mobile
+                  </Label>
+                  <Checkbox
+                    id="hideMobile"
+                    checked={!!currentElement.position?.hideMobile}
+                    onCheckedChange={(checked) => handlePositionChange("hideMobile", checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="hideTablet" className="text-sm">
+                    Hide on Tablet
+                  </Label>
+                  <Checkbox
+                    id="hideTablet"
+                    checked={!!currentElement.position?.hideTablet}
+                    onCheckedChange={(checked) => handlePositionChange("hideTablet", checked)}
+                  />
+                </div>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="hideDesktop" className="text-sm">
+                    Hide on Desktop
+                  </Label>
+                  <Checkbox
+                    id="hideDesktop"
+                    checked={!!currentElement.position?.hideDesktop}
+                    onCheckedChange={(checked) => handlePositionChange("hideDesktop", checked)}
+                  />
+                </div>
+              </div>
             </div>
           </AccordionContent>
         </AccordionItem>

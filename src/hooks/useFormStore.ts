@@ -1,4 +1,6 @@
+
 import { create } from 'zustand';
+import { immer } from 'zustand/middleware/immer';
 
 export type FormElementType = 
   'text' | 'email' | 'password' | 'number' | 'date' | 
@@ -91,11 +93,16 @@ export interface FormElement {
   validateOnChange?: boolean;
 }
 
-interface FormStore {
+interface FormStoreState {
   elements: FormElement[];
   customComponents: FormElement[];
   favoriteComponents: string[]; // Array of component IDs
   currentId: string | null;
+  history: FormElement[][];
+  historyIndex: number;
+}
+
+interface FormStore extends FormStoreState {
   addElement: (element: FormElement) => void;
   updateElement: (id: string, updates: Partial<FormElement>) => void;
   removeElement: (id: string) => void;
@@ -104,6 +111,11 @@ interface FormStore {
   addCustomComponent: (component: FormElement) => void;
   toggleFavorite: (componentId: string) => void;
   isFavorite: (componentId: string) => boolean;
+  setElements: (elements: FormElement[]) => void;
+  undo: () => void;
+  redo: () => void;
+  canUndo: boolean;
+  canRedo: boolean;
 }
 
 export const useFormStore = create<FormStore>((set, get) => ({
@@ -111,25 +123,53 @@ export const useFormStore = create<FormStore>((set, get) => ({
   customComponents: [],
   favoriteComponents: [],
   currentId: null,
+  history: [[]],
+  historyIndex: 0,
+  canUndo: false,
+  canRedo: false,
   
   addElement: (element) => 
-    set((state) => ({ 
-      elements: [...state.elements, element],
-      currentId: element.id
-    })),
+    set((state) => {
+      const newElements = [...state.elements, element];
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newElements];
+      return { 
+        elements: newElements,
+        currentId: element.id,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+        canUndo: true,
+        canRedo: false
+      };
+    }),
   
   updateElement: (id, updates) =>
-    set((state) => ({
-      elements: state.elements.map((el) => 
+    set((state) => {
+      const newElements = state.elements.map((el) => 
         el.id === id ? { ...el, ...updates } : el
-      ),
-    })),
+      );
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newElements];
+      return {
+        elements: newElements,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+        canUndo: true,
+        canRedo: false
+      };
+    }),
   
   removeElement: (id) =>
-    set((state) => ({
-      elements: state.elements.filter((el) => el.id !== id),
-      currentId: state.currentId === id ? null : state.currentId
-    })),
+    set((state) => {
+      const newElements = state.elements.filter((el) => el.id !== id);
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newElements];
+      return {
+        elements: newElements,
+        currentId: state.currentId === id ? null : state.currentId,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+        canUndo: true,
+        canRedo: false
+      };
+    }),
   
   setCurrentElement: (id) =>
     set({ currentId: id }),
@@ -139,7 +179,14 @@ export const useFormStore = create<FormStore>((set, get) => ({
       const newElements = [...state.elements];
       const [removed] = newElements.splice(startIndex, 1);
       newElements.splice(endIndex, 0, removed);
-      return { elements: newElements };
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), newElements];
+      return { 
+        elements: newElements,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+        canUndo: true,
+        canRedo: false
+      };
     }),
 
   addCustomComponent: (component) =>
@@ -163,4 +210,44 @@ export const useFormStore = create<FormStore>((set, get) => ({
   isFavorite: (componentId) => {
     return get().favoriteComponents.includes(componentId);
   },
+
+  setElements: (elements) =>
+    set((state) => {
+      const newHistory = [...state.history.slice(0, state.historyIndex + 1), elements];
+      return {
+        elements,
+        history: newHistory,
+        historyIndex: newHistory.length - 1,
+        canUndo: true,
+        canRedo: false
+      };
+    }),
+
+  undo: () =>
+    set((state) => {
+      if (state.historyIndex > 0) {
+        const newIndex = state.historyIndex - 1;
+        return {
+          elements: state.history[newIndex],
+          historyIndex: newIndex,
+          canUndo: newIndex > 0,
+          canRedo: true
+        };
+      }
+      return state;
+    }),
+
+  redo: () =>
+    set((state) => {
+      if (state.historyIndex < state.history.length - 1) {
+        const newIndex = state.historyIndex + 1;
+        return {
+          elements: state.history[newIndex],
+          historyIndex: newIndex,
+          canUndo: true,
+          canRedo: newIndex < state.history.length - 1
+        };
+      }
+      return state;
+    }),
 }));

@@ -14,9 +14,9 @@ export type {
 } from '../types/formTypes';
 
 // Create the store with the initial state and actions
-export const useFormStore = create<FormStore>((set, get) => ({
-  ...initialFormState,
-  canUndo: false,
-  canRedo: false,
-  ...createFormActions(set, get)
-}));
+export const useFormStore = create<FormStore>()(
+  immer((set, get) => ({
+    ...initialFormState,
+    ...createFormActions(set, get)
+  }))
+);

@@ -97,4 +97,6 @@ export interface FormStoreState {
   currentId: string | null;
   history: FormElement[][];
   historyIndex: number;
+  canUndo: boolean;
+  canRedo: boolean;
 }

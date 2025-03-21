@@ -7,5 +7,7 @@ export const initialFormState: FormStoreState = {
   favoriteComponents: [],
   currentId: null,
   history: [[]],
-  historyIndex: 0
+  historyIndex: 0,
+  canUndo: false,
+  canRedo: false
 };

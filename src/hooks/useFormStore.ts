@@ -15,7 +15,7 @@ export type {
 
 // Create the store with the initial state and actions
 export const useFormStore = create<FormStore>()(
-  immer((set, get) => ({
+  immer((set, get, store) => ({
     ...initialFormState,
     ...createFormActions(set, get)
   }))
